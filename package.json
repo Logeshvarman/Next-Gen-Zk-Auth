@@ -1,0 +1,76 @@
+{
+  "name": "Next-Gen-Zk-Auth",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@chakra-ui/icons": "^2.1.1",
+    "@chakra-ui/react": "^2.7.0",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@ensdomains/ensjs": "^3.0.0-alpha.64",
+    "@lit-protocol/lit-node-client": "^2.2.25",
+    "@polybase/client": "^0.6.2",
+    "@polybase/eth": "^0.6.2",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.4.3",
+    "@web3modal/ethereum": "^2.4.5",
+    "@web3modal/react": "^2.4.5",
+    "alchemy-sdk": "^2.9.0",
+    "authenticator": "^1.1.5",
+    "dotenv": "^16.1.4",
+    "ethers": "^6.6.0",
+    "framer-motion": "^6.5.1",
+    "html5-qrcode": "^2.3.8",
+    "otpauth-uri-parser": "^1.0.2",
+    "qr-scanner": "^1.4.2",
+    "react": "^18.2.0",
+    "react-copy-to-clipboard": "^5.1.0",
+    "react-countdown-circle-timer": "^3.2.1",
+    "react-device-detect": "^2.2.3",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.44.3",
+    "react-icons": "^3.11.0",
+    "react-qr-code": "^2.0.11",
+    "react-scripts": "5.0.1",
+    "viem": "^1.0.6",
+    "wagmi": "^1.2.0",
+    "web-vitals": "^2.1.4",
+    "webpack": "^5.90.1"
+  },
+  "devDependencies": {
+    "assert": "^2.0.0",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.0",
+    "eslint-config-react-app": "^7.0.1",
+    "https-browserify": "^1.0.0",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
+    "react-app-rewired": "^2.2.1",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "url": "^0.11.0"
+  },
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
