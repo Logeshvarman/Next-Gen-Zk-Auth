@@ -8,7 +8,7 @@ const colorTheme = {
     text: '#FAFAFA',
     textHighlight: '#FF0080',
     button: '#7928CA',
-    fallbackPfpIpfsCid: ipfsCids.Next-Gen-Zk-Auth,
+    fallbackPfpIpfsCid: ipfsCids.NextGenZkAuth,
   },
 };
 
