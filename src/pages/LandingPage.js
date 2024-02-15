@@ -38,7 +38,7 @@ function LandingPage() {
           fontWeight="bold"
           marginTop={2}
         >
-          Web3 OTP
+          Next-Gen-Zk-Auth
         </Text>
 
         <Text fontSize="large" fontWeight="bold">
