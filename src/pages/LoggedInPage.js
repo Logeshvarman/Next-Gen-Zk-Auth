@@ -125,7 +125,194 @@ function LoggedInPage() {
     };
   };
 
+  const decryptRec = async rec => {
+    const { id, service, serviceKey, account, accountKey, secret, secretKey } =
+      rec;
+    return Promise.all([
+      id,
+      decryptWithLit(service, serviceKey),
+      decryptWithLit(account, accountKey),
+      decryptWithLit(secret, secretKey),
+    ]).then(([id, decryptedService, decryptedAccount, decryptedSecret]) => ({
+      id,
+      service: decryptedService,
+      account: decryptedAccount,
+      secret: decryptedSecret,
+    }));
+  };
 
+  const decryptPolybaseRecs = async recs => {
+    const decryptedPolybaseRecs = [];
+    for (let rec of recs) {
+      const dr = await decryptRec(rec);
+      decryptedPolybaseRecs.push(dr);
+    }
+
+    return decryptedPolybaseRecs;
+  };
+
+  const decryptWithLit = async (encryptedString, encryptedSymmetricKey) => {
+    if (litClient) {
+      const encryptedMessageBlob = await LitJsSdk.base64StringToBlob(
+        encryptedString
+      );
+
+      const symmetricKey = await litClient.getEncryptionKey({
+        accessControlConditions: addressAccessControl(address),
+        toDecrypt: encryptedSymmetricKey,
+        chain,
+        authSig,
+      });
+
+      const decryptedMessage = await LitJsSdk.decryptString(
+        encryptedMessageBlob,
+        symmetricKey
+      );
+
+      return decryptedMessage;
+    }
+  };
+
+  const [polybaseDb, setPolygbaseDb] = useState();
+  const [defaultNamespace] = useState(
+    'pk/0xd126d4c850e574837db72bbd30836b51699438bfc8d2f5c3438e10711130fadea34721adfd2ac3a19da68552aea3d785bbc57baadb4cafdb0a0933137fb3a5a8/Keys'
+  );
+  const [collectionReference] = useState('Keys');
+  const [appId] = useState('hack-fs');
+
+  // need signer in order to create Polybase records
+  const [addedSigner, setAddedSigner] = useState(false);
+  const [cards, setCards] = useState();
+  const [filteredCards, setFilteredCards] = useState(cards);
+
+  const deleteRecord = async id => {
+    const record = await polybaseDb
+      .collection(collectionReference)
+      .record(id)
+      .call('del');
+    return record;
+  };
+
+  // main server side filter is user address so they only get their own records
+  // note: they still wouldn't be able to decrypt other records
+  const listRecordsWhereAppIdMatches = async (
+    field = 'address',
+    op = '==',
+    val = address
+  ) => {
+    if (polybaseDb) {
+      const records = await polybaseDb
+        .collection(collectionReference)
+        .where(field, op, val)
+        .where('appId', '==', appId)
+        .get();
+      return records.data.map(d => d.data);
+    } else {
+      return [];
+    }
+  };
+
+  const createPolybaseRecord = async (service, account, secret) => {
+    setPolybaseLoading(true);
+    try {
+      // schema creation types
+      // id: string, appId: string, address: string, service: string, serviceKey: string,
+      // account: string, accountKey: string, secret: string, secretKey: string
+      const id = `encrypted${Date.now().toString()}`;
+
+      const record = await polybaseDb
+        .collection(collectionReference)
+        .create([
+          id,
+          appId,
+          address,
+          service.encryptedString,
+          service.encryptedSymmetricKey,
+          account.encryptedString,
+          account.encryptedSymmetricKey,
+          secret.encryptedString,
+          secret.encryptedSymmetricKey,
+        ]);
+
+      setPolybaseRetrying(false);
+
+      // update ui to show new card
+      setCards(cards => [
+        {
+          id,
+          service: service.service,
+          account: account.account,
+          secret: secret.secret,
+        },
+        ...cards,
+      ]);
+    } catch (err) {
+      console.log(err);
+
+      // error handling and retry
+      // -32603 is the error code if user cancels tx
+      if (err.code !== -32603) {
+        // if Polybase error, retry post data
+        createPolybaseRecord(service, account, secret);
+        setPolybaseRetrying(true);
+      }
+    }
+    setPolybaseLoading(false);
+  };
+
+  const encryptAndSaveSecret = async ({ service, account, secret }) => {
+    const encryptedService = await encryptWithLit(service);
+    const encryptedAccount = await encryptWithLit(account);
+    const encryptedSecret = await encryptWithLit(secret);
+
+    const full2fa = {
+      service: {
+        decrypted: service,
+        encrypted: encryptedService,
+      },
+      account: {
+        decrypted: account,
+        encrypted: encryptedAccount,
+      },
+      secret: {
+        decrypted: secret,
+        encrypted: encryptedSecret,
+      },
+    };
+
+    setCurrent2fa(full2fa);
+
+    createPolybaseRecord(
+      { ...encryptedService, service },
+      { ...encryptedAccount, account },
+      { ...encryptedSecret, secret }
+    );
+  };
+
+  useEffect(() => {
+    if (isConnected && address) {
+      const db = new Polybase({
+        defaultNamespace,
+      });
+
+      const addSigner = async () => {
+        setAddedSigner(true);
+        db.signer(async data => {
+          const accounts = await eth.requestAccounts();
+          const account = accounts[0];
+          const sig = await eth.sign(data, account);
+          return { h: 'eth-personal-sign', sig };
+        });
+
+
+
+
+        setPolygbaseDb(db);
+      };
+
+      addSigner();
+    }
+  }, [isConnected, address]);
 
   useEffect(() => {
     if (polybaseDb && addedSigner && litClient && authSig) {
@@ -182,7 +369,7 @@ function LoggedInPage() {
               fontSize="4xl"
               fontWeight="bold"
             >
-              Web3 OTP
+              Next-Gen-ZK-AUTH
             </Text>
           </div>
 
