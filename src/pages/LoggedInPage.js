@@ -369,10 +369,9 @@ function LoggedInPage() {
               fontSize="4xl"
               fontWeight="bold"
             >
-              Next-Gen-ZK-AUTH
+            Next-Gen-Zk-Auth
             </Text>
           </div>
-
           {cards && (
             <AddSecret
               saveSecret={encryptAndSaveSecret}
@@ -385,7 +384,7 @@ function LoggedInPage() {
       {/* NEW LOGGED IN USER */}
       {cards && (
         <Card padding={isMobile ? 4 : 10} my={5}>
-          <VStack alignItems="flex-start">
+          <VStack alignItems="flex-start" >
             <HStack>
               <a href={ensProfile} target="_blank">
                 <Image
@@ -401,7 +400,8 @@ function LoggedInPage() {
                 />
               </a>
 
-              <VStack style={{ textAlign: 'left', alignItems: 'flex-start' }}>
+              <VStack style={{ textAlign: 'left', 
+              alignItems: 'flex-start' }}>
                 <Text>
                   <strong>
                   {greeting}

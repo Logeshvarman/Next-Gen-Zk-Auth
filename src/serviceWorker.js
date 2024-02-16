@@ -37,15 +37,6 @@ export function register(config) {
   }
 }
 
-self.addEventListener('push', event => {
-  const options = {
-    body: event.data.text(),
-  };
-
-  event.waitUntil(
-    self.registration.showNotification('Next-Gen-Zk-Auth', options)
-  );
-});
 
 Notification.requestPermission().then(permission => {
   if (permission === 'granted') {
