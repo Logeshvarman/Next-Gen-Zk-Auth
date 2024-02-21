@@ -180,7 +180,6 @@ function LoggedInPage() {
   const [collectionReference] = useState('Keys');
   const [appId] = useState('hack-fs');
 
-  // need signer in order to create Polybase records
   const [addedSigner, setAddedSigner] = useState(false);
   const [cards, setCards] = useState();
   const [filteredCards, setFilteredCards] = useState(cards);
@@ -193,8 +192,6 @@ function LoggedInPage() {
     return record;
   };
 
-  // main server side filter is user address so they only get their own records
-  // note: they still wouldn't be able to decrypt other records
   const listRecordsWhereAppIdMatches = async (
     field = 'address',
     op = '==',
@@ -215,9 +212,7 @@ function LoggedInPage() {
   const createPolybaseRecord = async (service, account, secret) => {
     setPolybaseLoading(true);
     try {
-      // schema creation types
-      // id: string, appId: string, address: string, service: string, serviceKey: string,
-      // account: string, accountKey: string, secret: string, secretKey: string
+  
       const id = `encrypted${Date.now().toString()}`;
 
       const record = await polybaseDb
@@ -236,7 +231,6 @@ function LoggedInPage() {
 
       setPolybaseRetrying(false);
 
-      // update ui to show new card
       setCards(cards => [
         {
           id,
@@ -249,8 +243,6 @@ function LoggedInPage() {
     } catch (err) {
       console.log(err);
 
-      // error handling and retry
-      // -32603 is the error code if user cancels tx
       if (err.code !== -32603) {
         // if Polybase error, retry post data
         createPolybaseRecord(service, account, secret);
@@ -386,12 +378,11 @@ function LoggedInPage() {
         <Card padding={isMobile ? 4 : 10} my={5}>
           <VStack alignItems="flex-start" >
             <HStack>
-              <a href={ensProfile} target="_blank">
+              <a target="_blank">
                 <Image
                   borderRadius="full"
                   boxSize={isMobile ? '80px' : '100px'}
-                  // if the user has an ENS with a set avatar, the pfp is their avatar
-                  src={ensAvatar}
+              
                   fallbackSrc={imgProviderSrc(
                     isMobile,
                     themeData.fallbackPfpIpfsCid
@@ -405,35 +396,14 @@ function LoggedInPage() {
                 <Text>
                   <strong>
                   {greeting}
-                    {ensName ? (
-                      <a href={ensProfile} target="_blank">
-                        {ensName}
-                      </a>
-                    ) : (
-                      'User'
-                    )}{' '}
+                    User
                   </strong>
                 </Text>
 
-                <Text>
-                  <CopyToClipboard text={address}>
-                    <span
-                      style={{
-                        color: 'rgba(192,192,192,40)',
-                        marginLeft: '5px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <CopyIcon marginRight={1} />
-                      <Tooltip label="Click to copy address">
-                        {shortAddress(address)}
-                      </Tooltip>
-                    </span>
-                  </CopyToClipboard>
-                </Text>
+
 
                 <Button
-                  marginLeft={2}
+                  marginLeft={-1}
                   onClick={() => disconnect()}
                   width={isMobile ? '100%' : 'fit-content'}
                 >
@@ -446,20 +416,6 @@ function LoggedInPage() {
       )}
 
       {(!address || !cards) && <Spinner marginTop={20} size={'xl'} />}
-
-      {cards && cards.length == 0 && (
-        <Text textAlign="left">
-          Get started with Web3 OTP by adding your first 2FA secret. Need
-          help?{' '}
-          <a
-            style={{ textDecoration: 'underline' }}
-            target="_blank"
-            href="https://www.notion.so/0xlogeshvarman/How-to-add-2FA-codes-from-your-web2-and-web3-apps-to-the-Web3-OTP-Authenticator-App-38f74a1c160a4866920ddaae5f4c668e"
-          >
-            Read the docs
-          </a>
-        </Text>
-      )}
       {/* Returning user with secrets*/}
 
       <Wrap justifyContent={'space-between'} id="logged-in-wrap">
@@ -467,8 +423,6 @@ function LoggedInPage() {
           cards.map(c => (
             <WrapItem width={isMobile || !isLargerThan700 ? '100%' : '49%'}>
               <ServiceCard
-                key={c.secret}
-                linkToEncodedData={`https://testnet.polybase.xyz/v0/collections/${encodedNamespaceDb}/records/${c.id}`}
                 service={c.service}
                 account={c.account}
                 secret={c.secret}

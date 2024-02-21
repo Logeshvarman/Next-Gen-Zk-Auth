@@ -28,12 +28,6 @@ function SecretPopover({ secret, isDemo, linkToEncodedData, themeData }) {
             <p>
               {secret.slice(0, 9)} .... {secret.slice(-9)}
             </p>
-            <CopyToClipboard text={secret}>
-              <Button marginTop={2}>
-                <CopyIcon marginRight={1} /> Copy full {isDemo && ' demo '}2FA
-                secret
-              </Button>
-            </CopyToClipboard>
           </PopoverBody>
         </PopoverContent>
       </Popover>
