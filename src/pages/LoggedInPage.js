@@ -6,7 +6,6 @@ import {
   Card,
   Image,
   VStack,
-  Tooltip,
   Spinner,
   Wrap,
   WrapItem,
@@ -14,8 +13,6 @@ import {
 } from '@chakra-ui/react';
 
 import { isMobile } from 'react-device-detect';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { CopyIcon } from '@chakra-ui/icons';
 
 import * as LitJsSdk from '@lit-protocol/lit-node-client';
 
@@ -39,10 +36,6 @@ const greeting = Greetings();
 
 function LoggedInPage() {
   const { address, isConnected } = useAccount();
-  const publicClient = createPublicClient({
-    chain: mainnet,
-    transport: http(),
-  });
 
   const { disconnect } = useDisconnect();
   const [chain] = useState('ethereum');
@@ -184,13 +177,6 @@ function LoggedInPage() {
   const [cards, setCards] = useState();
   const [filteredCards, setFilteredCards] = useState(cards);
 
-  const deleteRecord = async id => {
-    const record = await polybaseDb
-      .collection(collectionReference)
-      .record(id)
-      .call('del');
-    return record;
-  };
 
   const listRecordsWhereAppIdMatches = async (
     field = 'address',
@@ -215,19 +201,6 @@ function LoggedInPage() {
   
       const id = `encrypted${Date.now().toString()}`;
 
-      const record = await polybaseDb
-        .collection(collectionReference)
-        .create([
-          id,
-          appId,
-          address,
-          service.encryptedString,
-          service.encryptedSymmetricKey,
-          account.encryptedString,
-          account.encryptedSymmetricKey,
-          secret.encryptedString,
-          secret.encryptedSymmetricKey,
-        ]);
 
       setPolybaseRetrying(false);
 
@@ -244,7 +217,6 @@ function LoggedInPage() {
       console.log(err);
 
       if (err.code !== -32603) {
-        // if Polybase error, retry post data
         createPolybaseRecord(service, account, secret);
         setPolybaseRetrying(true);
       }
@@ -318,13 +290,11 @@ function LoggedInPage() {
           const serviceSortedRecs =
             decryptedRecs &&
             decryptedRecs.sort((a, b) => {
-              // if same service, alphabetize by account
               if (a.service.toLowerCase() === b.service.toLowerCase()) {
                 return a.account.toLowerCase() > b.account.toLowerCase()
                   ? 1
                   : -1;
               } else {
-                // alphabetize by service
                 return a.service.toLowerCase() > b.service.toLowerCase()
                   ? 1
                   : -1;
@@ -336,10 +306,6 @@ function LoggedInPage() {
     }
   }, [addedSigner, litClient, authSig, polybaseDb]);
 
-  const shortAddress = addr => `${addr.slice(0, 5)}...${addr.slice(-4)}`;
-  const encodedNamespaceDb = encodeURIComponent(
-    `${defaultNamespace}/${collectionReference}`
-  );
 
   return (
     <>
@@ -370,10 +336,10 @@ function LoggedInPage() {
               themeData={themeData}
             />
           )}
-          {/* </BrowserView> */}
+        
         </HStack>
       )}
-      {/* NEW LOGGED IN USER */}
+   
       {cards && (
         <Card padding={isMobile ? 4 : 10} my={5}>
           <VStack alignItems="flex-start" >
@@ -416,7 +382,7 @@ function LoggedInPage() {
       )}
 
       {(!address || !cards) && <Spinner marginTop={20} size={'xl'} />}
-      {/* Returning user with secrets*/}
+
 
       <Wrap justifyContent={'space-between'} id="logged-in-wrap">
         {cards &&
