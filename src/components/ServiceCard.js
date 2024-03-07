@@ -28,7 +28,7 @@ function ServiceCard({
   const { color1, color2, textHighlight } = themeData;
   const [timerRefresh, setTimerRefresh] = useState(0);
   const [code, setCode] = useState('******');
-  
+  // starting duration offset from current time (new code at 0/60 and 30 seconds)
   const [duration, setDuration] = useState(
     new Date().getSeconds() > 30
       ? 60 - new Date().getSeconds()

@@ -6,6 +6,7 @@ import {
   Card,
   Image,
   VStack,
+  Tooltip,
   Spinner,
   Wrap,
   WrapItem,
@@ -13,6 +14,8 @@ import {
 } from '@chakra-ui/react';
 
 import { isMobile } from 'react-device-detect';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { CopyIcon } from '@chakra-ui/icons';
 
 import * as LitJsSdk from '@lit-protocol/lit-node-client';
 
@@ -36,6 +39,10 @@ const greeting = Greetings();
 
 function LoggedInPage() {
   const { address, isConnected } = useAccount();
+  const publicClient = createPublicClient({
+    chain: mainnet,
+    transport: http(),
+  });
 
   const { disconnect } = useDisconnect();
   const [chain] = useState('ethereum');
@@ -173,11 +180,21 @@ function LoggedInPage() {
   const [collectionReference] = useState('Keys');
   const [appId] = useState('hack-fs');
 
+  // need signer in order to create Polybase records
   const [addedSigner, setAddedSigner] = useState(false);
   const [cards, setCards] = useState();
   const [filteredCards, setFilteredCards] = useState(cards);
 
+  const deleteRecord = async id => {
+    const record = await polybaseDb
+      .collection(collectionReference)
+      .record(id)
+      .call('del');
+    return record;
+  };
 
+  // main server side filter is user address so they only get their own records
+  // note: they still wouldn't be able to decrypt other records
   const listRecordsWhereAppIdMatches = async (
     field = 'address',
     op = '==',
@@ -198,12 +215,28 @@ function LoggedInPage() {
   const createPolybaseRecord = async (service, account, secret) => {
     setPolybaseLoading(true);
     try {
-  
+      // schema creation types
+      // id: string, appId: string, address: string, service: string, serviceKey: string,
+      // account: string, accountKey: string, secret: string, secretKey: string
       const id = `encrypted${Date.now().toString()}`;
 
+      const record = await polybaseDb
+        .collection(collectionReference)
+        .create([
+          id,
+          appId,
+          address,
+          service.encryptedString,
+          service.encryptedSymmetricKey,
+          account.encryptedString,
+          account.encryptedSymmetricKey,
+          secret.encryptedString,
+          secret.encryptedSymmetricKey,
+        ]);
 
       setPolybaseRetrying(false);
 
+      // update ui to show new card
       setCards(cards => [
         {
           id,
@@ -216,7 +249,10 @@ function LoggedInPage() {
     } catch (err) {
       console.log(err);
 
+      // error handling and retry
+      // -32603 is the error code if user cancels tx
       if (err.code !== -32603) {
+        // if Polybase error, retry post data
         createPolybaseRecord(service, account, secret);
         setPolybaseRetrying(true);
       }
@@ -290,11 +326,13 @@ function LoggedInPage() {
           const serviceSortedRecs =
             decryptedRecs &&
             decryptedRecs.sort((a, b) => {
+              // if same service, alphabetize by account
               if (a.service.toLowerCase() === b.service.toLowerCase()) {
                 return a.account.toLowerCase() > b.account.toLowerCase()
                   ? 1
                   : -1;
               } else {
+                // alphabetize by service
                 return a.service.toLowerCase() > b.service.toLowerCase()
                   ? 1
                   : -1;
@@ -306,6 +344,10 @@ function LoggedInPage() {
     }
   }, [addedSigner, litClient, authSig, polybaseDb]);
 
+  const shortAddress = addr => `${addr.slice(0, 5)}...${addr.slice(-4)}`;
+  const encodedNamespaceDb = encodeURIComponent(
+    `${defaultNamespace}/${collectionReference}`
+  );
 
   return (
     <>
@@ -327,28 +369,30 @@ function LoggedInPage() {
               fontSize="4xl"
               fontWeight="bold"
             >
-            Next-Gen-Zk-Auth
+              Next-Gen-Zk-Auth
             </Text>
           </div>
+
           {cards && (
             <AddSecret
               saveSecret={encryptAndSaveSecret}
               themeData={themeData}
             />
           )}
-        
+          {/* </BrowserView> */}
         </HStack>
       )}
-   
+      {/* NEW LOGGED IN USER */}
       {cards && (
         <Card padding={isMobile ? 4 : 10} my={5}>
-          <VStack alignItems="flex-start" >
+          <VStack alignItems="flex-start">
             <HStack>
-              <a target="_blank">
+              <a href={ensProfile} target="_blank">
                 <Image
                   borderRadius="full"
                   boxSize={isMobile ? '80px' : '100px'}
-              
+                  // if the user has an ENS with a set avatar, the pfp is their avatar
+                  src={ensAvatar}
                   fallbackSrc={imgProviderSrc(
                     isMobile,
                     themeData.fallbackPfpIpfsCid
@@ -357,19 +401,39 @@ function LoggedInPage() {
                 />
               </a>
 
-              <VStack style={{ textAlign: 'left', 
-              alignItems: 'flex-start' }}>
+              <VStack style={{ textAlign: 'left', alignItems: 'flex-start' }}>
                 <Text>
                   <strong>
                   {greeting}
-                    User
+                    {ensName ? (
+                      <a href={ensProfile} target="_blank">
+                        {ensName}
+                      </a>
+                    ) : (
+                      'User'
+                    )}{' '}
                   </strong>
                 </Text>
 
-
+                <Text>
+                  <CopyToClipboard text={address}>
+                    <span
+                      style={{
+                        color: 'rgba(192,192,192,40)',
+                        marginLeft: '5px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <CopyIcon marginRight={1} />
+                      <Tooltip label="Click to copy address">
+                        {shortAddress(address)}
+                      </Tooltip>
+                    </span>
+                  </CopyToClipboard>
+                </Text>
 
                 <Button
-                  marginLeft={-1}
+                  marginLeft={2}
                   onClick={() => disconnect()}
                   width={isMobile ? '100%' : 'fit-content'}
                 >
@@ -384,11 +448,14 @@ function LoggedInPage() {
       {(!address || !cards) && <Spinner marginTop={20} size={'xl'} />}
 
 
+
       <Wrap justifyContent={'space-between'} id="logged-in-wrap">
         {cards &&
           cards.map(c => (
             <WrapItem width={isMobile || !isLargerThan700 ? '100%' : '49%'}>
               <ServiceCard
+                key={c.secret}
+                linkToEncodedData={`https://testnet.polybase.xyz/v0/collections/${encodedNamespaceDb}/records/${c.id}`}
                 service={c.service}
                 account={c.account}
                 secret={c.secret}

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -11,11 +11,14 @@ import {
   useDisclosure,
   Input,
   Text,
+  Container,
+  Center,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { AddIcon } from '@chakra-ui/icons';
 import { isMobile } from 'react-device-detect';
 import parseURI from 'otpauth-uri-parser';
+import QrScanner from 'qr-scanner';
 
 const GET_SECRET_VIA = {
   UNDECIDED: 'UNDECIDED',
@@ -39,12 +42,31 @@ function AddSecret({ saveSecret, themeData }) {
     reset();
   };
 
+  const stopScanning = () => {
+    if (scanner) {
+      scanner.stop();
+    }
+  };
+
+  useEffect(() => {
+    if (scanner && !showQrScanner) {
+      stopScanning();
+    }
+  }, [showQrScanner]);
+
   const resetSecretGetVia = () => {
     setSecretGetVia(GET_SECRET_VIA.UNDECIDED);
     setQrData(null);
     reset();
     setShowQrScanner(false);
   };
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetSecretGetVia();
+      setShowQrScanner(false);
+    }
+  }, [isOpen]);
 
   const handleScan = uri => {
     setShowQrScanner(false);
@@ -58,9 +80,42 @@ function AddSecret({ saveSecret, themeData }) {
     setSecretGetVia(GET_SECRET_VIA.TEXT);
   };
 
+  useEffect(() => {
+    if (showQrScanner && secretGetVia === GET_SECRET_VIA.QR) {
+      const qrScanner = new QrScanner(
+        videoRef.current,
+        ({ data }) => {
+          if (data && data.startsWith('otpauth')) {
+            handleScan(data);
+          }
+        },
+        {
+          /* your options or returnDetailedScanResult: true if you're not specifying any other options */
+          highlightCodeOutline: true,
+          highlightScanRegion: true,
+          preferredCamera: 'environment',
+          // onDecodeError: error => alert(error),
+        }
+      );
+      qrScanner.start();
+      setScanner(qrScanner);
+    }
+  }, [showQrScanner, secretGetVia]);
 
- const title = '2FA secret';
+  const title = '2FA secret';
 
+  const helpDocs = (
+    <Text fontSize={'10px'} marginTop={1}>
+      Need help finding your 2FA secret?{' '}
+      <a
+        style={{ textDecoration: 'underline' }}
+        target="_blank"
+        href="https://0xlogeshvarman.notion.site/How-to-add-2FA-codes-from-your-web2-and-web3-apps-to-the-Web3-OTP-Authenticator-App-38f74a1c160a4866920ddaae5f4c668e?pvs=4"
+      >
+        Check out the docs
+      </a>
+    </Text>
+  );
 
   return (
     <>
@@ -73,15 +128,28 @@ function AddSecret({ saveSecret, themeData }) {
         <ModalContent>
           <ModalHeader>
             <Text>Add a new {title}</Text>
+            {helpDocs}
           </ModalHeader>
           <ModalCloseButton />
           {secretGetVia === GET_SECRET_VIA.UNDECIDED ? (
             <>
-  
+              <ModalBody>
+                <h1>How do you want to add your 2FA secret?</h1>
+              </ModalBody>
               <ModalFooter justifyContent={'space-evenly'}>
+                {/* <Center> */}
+                <Button
+                  onClick={() => {
+                    setSecretGetVia(GET_SECRET_VIA.QR);
+                    setShowQrScanner(true);
+                  }}
+                >
+                  Scan a QR code
+                </Button>
                 <Button onClick={() => setSecretGetVia(GET_SECRET_VIA.TEXT)}>
                   Enter a setup key
                 </Button>
+                {/* </Center> */}
               </ModalFooter>
             </>
           ) : secretGetVia === GET_SECRET_VIA.TEXT ? (
@@ -133,7 +201,17 @@ function AddSecret({ saveSecret, themeData }) {
             </form>
           ) : (
             <ModalBody>
-          {/*todo: add camera access QR pickup*/}
+              <Text>Scan 2FA QR code (must allow camera access)</Text>
+              <video
+                ref={videoRef}
+                style={{
+                  display: !showQrScanner ? 'none' : 'block',
+                  width: '100%',
+                }}
+              ></video>
+              <ModalFooter px={0}>
+                <Button onClick={() => resetSecretGetVia()}>Back</Button>
+              </ModalFooter>
             </ModalBody>
           )}
         </ModalContent>
