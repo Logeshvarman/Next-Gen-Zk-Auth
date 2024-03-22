@@ -63,7 +63,7 @@ function LandingPage() {
                   <QRCode
                     size={50}
                     style={{ height: 'auto', maxWidth: '50%', width: '50%' }}
-                    value="https://metamask.app.link/dapp/Next-Gen-Zk-Auth.on.fleek.co"
+                    value="https://metamask.app.link/dapp/https://next-gen-zk-auth.on-fleek.app"
                     viewBox={`0 0 50 50`}
                   />
                 </>
@@ -73,7 +73,7 @@ function LandingPage() {
                   background={'#7928CA'}
                   onClick={() =>
                     openInNewTab(
-                      'https://metamask.app.link/dapp/Next-Gen-Zk-Auth.on.fleek.co'
+                      'https://metamask.app.link/dapp/https://next-gen-zk-auth.on-fleek.app'
                     )
                   }
                 >
