@@ -26,20 +26,17 @@ import { useAccount, useDisconnect } from 'wagmi';
 import { Polybase } from '@polybase/client';
 import * as eth from '@polybase/eth';
 
-import AddSecret from '../components/AddSecret';
-import ServiceCard from '../components/ServiceCard';
+import AddSecretbc from '../components/AddSecretbc';
 
-
+import ServiceCardbc from '../components/ServiceCardbc';
 import LoaderModal from '../components/LoaderModal';
 import { getThemeData } from '../theme';
 import { imgProviderSrc } from '../ipfsHelpers';
 import { timeout } from '../helper';
 
-import Greetings from '../components/Greetings';
 
-const greeting = Greetings();
 
-function LoggedInPage() {
+function LoggedInPagebc() {
   const { address, isConnected } = useAccount();
   const publicClient = createPublicClient({
     chain: mainnet,
@@ -177,9 +174,9 @@ function LoggedInPage() {
 
   const [polybaseDb, setPolygbaseDb] = useState();
   const [defaultNamespace] = useState(
-    'pk/0xd126d4c850e574837db72bbd30836b51699438bfc8d2f5c3438e10711130fadea34721adfd2ac3a19da68552aea3d785bbc57baadb4cafdb0a0933137fb3a5a8/Keys'
+    'pk/0xd126d4c850e574837db72bbd30836b51699438bfc8d2f5c3438e10711130fadea34721adfd2ac3a19da68552aea3d785bbc57baadb4cafdb0a0933137fb3a5a8/bccode'
   );
-  const [collectionReference] = useState('Keys');
+  const [collectionReference] = useState('bc');
   const [appId] = useState('hack-fs');
 
   // need signer in order to create Polybase records
@@ -357,7 +354,7 @@ function LoggedInPage() {
         open={polybaseLoading || polybaseRetrying}
         message={
           polybaseLoading
-            ? 'Sign the message in your wallet to encrypt and save your 2FA secret'
+            ? 'Sign the message in your wallet to encrypt and save your 2FA Backup codes'
             : 'Still polling Polybase, please sign again.'
         }
         tableData={current2fa}
@@ -376,7 +373,7 @@ function LoggedInPage() {
           </div>
 
           {cards && (
-            <AddSecret
+            <AddSecretbc
               saveSecret={encryptAndSaveSecret}
               themeData={themeData}
             />
@@ -406,7 +403,7 @@ function LoggedInPage() {
               <VStack style={{ textAlign: 'left', alignItems: 'flex-start' }}>
                 <Text>
                   <strong>
-                  {greeting}
+                  
                     {ensName ? (
                       <a href={ensProfile} target="_blank">
                         {ensName}
@@ -452,13 +449,11 @@ function LoggedInPage() {
 
 
 
-
       <Wrap justifyContent={'space-between'} id="logged-in-wrap">
         {cards &&
           cards.map(c => (
             <WrapItem width={isMobile || !isLargerThan700 ? '100%' : '49%'}>
-              <ServiceCard
-                key={c.secret}
+              <ServiceCardbc
                 linkToEncodedData={`https://testnet.polybase.xyz/v0/collections/${encodedNamespaceDb}/records/${c.id}`}
                 service={c.service}
                 account={c.account}
@@ -468,10 +463,8 @@ function LoggedInPage() {
             </WrapItem>
           ))}
       </Wrap>
-
-  
     </>
   );
 }
 
-export default LoggedInPage;
+export default  LoggedInPagebc ;

@@ -15,7 +15,7 @@ import { isBrowser } from 'react-device-detect';
 import { openInNewTab } from '../helper';
 import { getThemeData } from '../theme';
 
-function LandingPage() {
+function LandingPage({ onSignInOption }) {
   const logo = (cid, link) => (
     <a href={link} target="_blank">
       <Image
@@ -28,6 +28,15 @@ function LandingPage() {
     </a>
   );
   const themeData = getThemeData('default');
+
+  const handleSignInWithWallet = () => {
+    onSignInOption('wallet');
+  };
+
+  const handleSignInForBackupCodes = () => {
+    onSignInOption('backupCodes');
+  };
+
   return (
     <>
       <Container>
@@ -47,7 +56,7 @@ function LandingPage() {
         <br></br>
         <Center my={3}>
           {window.ethereum && (
-            <Button padding={'0'} my={2} background={'#7928CA'}>
+            <Button padding={'0'} my={2} background={'#7928CA'} onClick={handleSignInWithWallet}>
               <Web3Button
                 icon="hide"
                 avatar="hide"
@@ -63,7 +72,7 @@ function LandingPage() {
                   <QRCode
                     size={50}
                     style={{ height: 'auto', maxWidth: '50%', width: '50%' }}
-                    value="https://metamask.app.link/dapp/Next-Gen-Zk-Auth.on.fleek.co"
+                    value="https://metamask.app.link/dapp/web3otp.on.fleek.co"
                     viewBox={`0 0 50 50`}
                   />
                 </>
@@ -73,7 +82,47 @@ function LandingPage() {
                   background={'#7928CA'}
                   onClick={() =>
                     openInNewTab(
-                      'https://metamask.app.link/dapp/Next-Gen-Zk-Auth.on.fleek.co'
+                      'https://metamask.app.link/dapp/web3otp.on.fleek.co'
+                    )
+                  }
+                >
+                  Sign in from Metamask Mobile
+                </Button>
+              )}
+            </VStack>
+          )}
+        </Center>
+
+
+        <Center my={3}>
+          {window.ethereum && (
+            <Button padding={'0'} my={2} background={'#7928CA'} onClick={handleSignInForBackupCodes}>
+              <Web3Button
+                icon="hide"
+                avatar="hide"
+                label="Backup codes"
+              />
+            </Button>
+          )}
+          {!window.ethereum && (
+            <VStack>
+              {isBrowser ? (
+                <>
+                  <Text>Sign QR to open in Metamask Mobile</Text>
+                  <QRCode
+                    size={50}
+                    style={{ height: 'auto', maxWidth: '50%', width: '50%' }}
+                    value="https://metamask.app.link/dapp/web3otp.on.fleek.co"
+                    viewBox={`0 0 50 50`}
+                  />
+                </>
+              ) : (
+                <Button
+                  my={4}
+                  background={'#7928CA'}
+                  onClick={() =>
+                    openInNewTab(
+                      'https://metamask.app.link/dapp/web3otp.on.fleek.co'
                     )
                   }
                 >

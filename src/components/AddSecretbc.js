@@ -26,7 +26,7 @@ const GET_SECRET_VIA = {
   TEXT: 'TEXT',
 };
 
-function AddSecret({ saveSecret, themeData }) {
+function AddSecretbc({ saveSecret, themeData }) {
   const videoRef = useRef(null);
   const [showQrScanner, setShowQrScanner] = useState(false);
   const [scanner, setScanner] = useState();
@@ -102,7 +102,7 @@ function AddSecret({ saveSecret, themeData }) {
     }
   }, [showQrScanner, secretGetVia]);
 
-  const title = '2FA secret';
+  const title = 'BackUp code';
 
   return (
     <>
@@ -120,23 +120,9 @@ function AddSecret({ saveSecret, themeData }) {
           <ModalCloseButton />
           {secretGetVia === GET_SECRET_VIA.UNDECIDED ? (
             <>
-              <ModalBody>
-                <h1>How do you want to add your 2FA secret?</h1>
-              </ModalBody>
               <ModalFooter justifyContent={'space-evenly'}>
-                {/* <Center> */}
-                <Button
-                  onClick={() => {
-                    setSecretGetVia(GET_SECRET_VIA.QR);
-                    setShowQrScanner(true);
-                  }}
-                  style={{ marginRight: '10px' }}
-                >
-                  Scan a QR code
-                </Button>
-                <Button onClick={() => setSecretGetVia(GET_SECRET_VIA.TEXT)}
-                style={{ marginRight: '10px' }}>
-                  Setup Secret
+                <Button onClick={() => setSecretGetVia(GET_SECRET_VIA.TEXT)}>
+                  Backup code
                 </Button>
               </ModalFooter>
             </>
@@ -163,15 +149,15 @@ function AddSecret({ saveSecret, themeData }) {
                   })}
                   marginBottom={2}
                 />
-                <Text>2FA secret key from service</Text>
+                <Text>2FA backup code from service</Text>
                 <Input
                   type="text"
-                  placeholder="j22h ni4e cd4o hqrx fka7 7uye wf2d xh77"
+                  placeholder="01010 01010 01010 01010 01010"
                   defaultValue={qrData?.secret}
                   {...register('secret', {
                     required: true,
-                    minLength: 16,
-                    maxLength: 80,
+                    minLength: 8,
+                    maxLength: 100,
                   })}
                 />
               </ModalBody>
@@ -208,4 +194,4 @@ function AddSecret({ saveSecret, themeData }) {
   );
 }
 
-export default AddSecret;
+export default AddSecretbc;

@@ -8,16 +8,14 @@ import {
   VStack,
   Text,
 } from '@chakra-ui/react';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { CopyIcon, ExternalLinkIcon } from '@chakra-ui/icons';
-import { CountdownCircleTimer } from 'react-countdown-circle-timer';
 import * as authenticator from 'authenticator';
 import { useState, useEffect } from 'react';
-import SecretPopover from './SecretPopover';
+import SecretPopoverbc from './SecretPopoverbc';
 import { openInNewTab } from '../helper';
 import { isMobile } from 'react-device-detect';
 
-function ServiceCard({
+function ServiceCardbc({
   service,
   account,
   secret,
@@ -34,24 +32,7 @@ function ServiceCard({
       ? 60 - new Date().getSeconds()
       : 30 - new Date().getSeconds()
   );
-  useEffect(() => {
-    const getCode = async () => {
-      const formattedToken = authenticator.generateToken(secret);
-      setCode(formattedToken);
-    };
 
-    const interval = setInterval(() => {
-      const secs = new Date().getSeconds();
-      // every 30 seconds a new code is generated
-      if (secs === 0 || secs === 30) {
-        getCode();
-        setDuration(30);
-        setTimerRefresh(previousTimerRefresh => previousTimerRefresh + 1);
-      }
-    }, 1000);
-    getCode();
-    return () => clearInterval(interval);
-  }, []);
 
   const spaceOutCode = num => `${num.slice(0, 3)} ${num.slice(3)}`;
 
@@ -72,32 +53,11 @@ function ServiceCard({
         <div>
           {service}: {account}
         </div>
-        <CopyToClipboard text={code}>
-          <Center marginTop={5} style={{ cursor: 'pointer' }}>
-            <CountdownCircleTimer
-              key={timerRefresh}
-              colors="url(#your-unique-id)"
-              isPlaying
-              duration={duration}
-              size={150}
-            >
-              {({ remainingTime }) => (
-                <VStack gap={0}>
-                  <Text fontSize={'24px'} color={textHighlight} m={0} p={0}>
-                    <strong>{spaceOutCode(code)}</strong>
-                  </Text>
-                  <Text color={''} fontSize={'13px'} m={0} p={0}>
-                    <CopyIcon /> Copy OTP
-                  </Text>
-                </VStack>
-              )}
-            </CountdownCircleTimer>
-          </Center>
-        </CopyToClipboard>
+        
       </CardBody>
 
       <CardFooter justify={'center'}>
-        <SecretPopover
+        <SecretPopoverbc
           secret={secret}
           isDemo={isDemo}
           linkToEncodedData={linkToEncodedData}
@@ -117,4 +77,4 @@ function ServiceCard({
   );
 }
 
-export default ServiceCard;
+export default ServiceCardbc;
