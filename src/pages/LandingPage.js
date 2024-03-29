@@ -72,11 +72,7 @@ function LandingPage({ onSignInOption }) {
                   <QRCode
                     size={50}
                     style={{ height: 'auto', maxWidth: '50%', width: '50%' }}
-<<<<<<< HEAD
-                    value="https://metamask.app.link/dapp/web3otp.on.fleek.co"
-=======
                     value="https://metamask.app.link/dapp/https://next-gen-zk-auth.on-fleek.app"
->>>>>>> 3042f20fd01b1a55d1b33186a75f12cf1846354c
                     viewBox={`0 0 50 50`}
                   />
                 </>
@@ -86,7 +82,6 @@ function LandingPage({ onSignInOption }) {
                   background={'#7928CA'}
                   onClick={() =>
                     openInNewTab(
-<<<<<<< HEAD
                       'https://metamask.app.link/dapp/web3otp.on.fleek.co'
                     )
                   }
@@ -127,10 +122,9 @@ function LandingPage({ onSignInOption }) {
                   background={'#7928CA'}
                   onClick={() =>
                     openInNewTab(
-                      'https://metamask.app.link/dapp/web3otp.on.fleek.co'
-=======
+            
                       'https://metamask.app.link/dapp/https://next-gen-zk-auth.on-fleek.app'
->>>>>>> 3042f20fd01b1a55d1b33186a75f12cf1846354c
+
                     )
                   }
                 >
