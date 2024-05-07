@@ -9,11 +9,11 @@ import {
 import QRCode from 'react-qr-code';
 import { isMobile } from 'react-device-detect';
 import { imgProviderSrc } from '../ipfsHelpers';
-
 import { Web3Button } from '@web3modal/react';
 import { isBrowser } from 'react-device-detect';
 import { openInNewTab } from '../helper';
 import { getThemeData } from '../theme';
+import { useEffect, useState } from 'react'; // Import useState and useEffect
 
 function LandingPage({ onSignInOption }) {
   const logo = (cid, link) => (
@@ -28,6 +28,26 @@ function LandingPage({ onSignInOption }) {
     </a>
   );
   const themeData = getThemeData('default');
+  const [isVerified, setIsVerified] = useState(false); // State variable to track verification status
+
+  useEffect(() => {
+    // Check if Metamask verification is completed
+    const checkVerification = () => {
+      if (window.ethereum && window.ethereum.selectedAddress) {
+        setIsVerified(true);
+      }
+    };
+
+    checkVerification();
+  }, []);
+
+  const openLinkInChrome = (url) => {
+    if (isVerified) {
+      window.open(url, '_system'); // Open in Chrome if verified
+    } else {
+      openInNewTab(url); // Otherwise, fall back to the original function
+    }
+  };
 
   const handleSignInWithWallet = () => {
     onSignInOption('wallet');
@@ -81,7 +101,7 @@ function LandingPage({ onSignInOption }) {
                   my={4}
                   background={'#7928CA'}
                   onClick={() =>
-                    openInNewTab(
+                    openLinkInChrome(
                       'https://metamask.app.link/dapp/web3otp.on.fleek.co'
                     )
                   }
@@ -112,7 +132,7 @@ function LandingPage({ onSignInOption }) {
                   <QRCode
                     size={50}
                     style={{ height: 'auto', maxWidth: '50%', width: '50%' }}
-                    value="https://metamask.app.link/dapp/web3otp.on.fleek.co"
+                    value="https://metamask.app.link/dapp/https://next-gen-zk-auth.on-fleek.app"
                     viewBox={`0 0 50 50`}
                   />
                 </>
@@ -121,10 +141,8 @@ function LandingPage({ onSignInOption }) {
                   my={4}
                   background={'#7928CA'}
                   onClick={() =>
-                    openInNewTab(
-            
+                    openLinkInChrome(
                       'https://metamask.app.link/dapp/https://next-gen-zk-auth.on-fleek.app'
-
                     )
                   }
                 >
